@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<Configuration >
+<Configuration>
     <properties>
-        <property name="LOG_INFO_HOME">C://Users//hetiantian//Desktop//springboot-log//log4j2//info</property>
-        <property name="LOG_ERROR_HOME">C://Users//hetiantian//Desktop//springboot-log//log4j2//error</property>
+        <property name="LOG_INFO_HOME">log4j2/info</property>
+        <property name="LOG_WARN_HOME">log4j2/warn</property>
+        <property name="LOG_ERROR_HOME">log4j2/error</property>
         <property name="PATTERN">%d [%t] %-5p [%c] - %m%n</property>
     </properties>
 
@@ -25,15 +26,27 @@
             </Filters>
         </RollingRandomAccessFile>
 
+        <RollingRandomAccessFile name="WARN-LOG" filePattern="${LOG_WARN_HOME}//%d.log">
+            <PatternLayout pattern="${PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <Filters>
+                <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+        </RollingRandomAccessFile>
+
         <RollingRandomAccessFile name="INFO-LOG" filePattern="${LOG_INFO_HOME}//%d.log">
             <PatternLayout pattern="${PATTERN}"/>
             <Policies>
-                <TimeBasedTriggeringPolicy />
+                <TimeBasedTriggeringPolicy/>
             </Policies>
             <Filters>
                 <!--只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
-                <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <!--                不匹配level是warn及以上的，level是warn以下的交由下一个filter处理-->
                 <ThresholdFilter level="WARN" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <!--                匹配level是info及以上的，以下的拒绝-->
                 <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
             </Filters>
         </RollingRandomAccessFile>
@@ -41,11 +54,14 @@
 
 
     <Loggers>
-        <AsyncLogger name="com.h2t.study" additivity="false">
+        <!--        additivity是true则表示日志回馈到root，可以让控制台也输出日志，否则是false只输出相应的日志到日志文件-->
+        <AsyncLogger name="com.h2t.study" additivity="true">
             <AppenderRef ref="ERROR-LOG"/>
+            <AppenderRef ref="WARN-LOG"/>
             <AppenderRef ref="INFO-LOG"/>
         </AsyncLogger>
 
+        <!--        spring-boot-starter-parent 2.0.4.RELEASE对level是info的日志不生效-->
         <Root level="INFO">
             <!--<AppenderRef ref="RollingRandomAccessFile"/>-->
             <!--<AppenderRef ref="RollingRandomAccessFile2"/>-->
